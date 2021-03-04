@@ -14,18 +14,28 @@ const pool = new Pool({
  * @param {String} email The email of the user.
  * @return {Promise<{}>} A promise to the user.
  */
+
 const getUserWithEmail = function (email) {
-  let user;
-  for (const userId in users) {
-    user = users[userId];
-    if (user.email.toLowerCase() === email.toLowerCase()) {
-      break;
-    } else {
-      user = null;
-    }
-  }
-  return Promise.resolve(user);
+  let emailAddress = email;
+  return pool
+    .query(
+      `
+  SELECT * FROM users
+  WHERE email = $1
+  `,
+      [emailAddress]
+    )
+    .then((res) => {
+      if (res.rows === []) {
+        return null;
+      }
+      return res.rows[0];
+    })
+    .catch((err) => {
+      err;
+    });
 };
+
 exports.getUserWithEmail = getUserWithEmail;
 
 /**
