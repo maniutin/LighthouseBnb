@@ -44,7 +44,23 @@ exports.getUserWithEmail = getUserWithEmail;
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function (id) {
-  return Promise.resolve(users[id]);
+  let userID = id;
+  return pool
+    .query(
+      `
+    SELECT * FROM users
+    WHERE id = $1`,
+      [userID]
+    )
+    .then((res) => {
+      if (res.rows === []) {
+        return null;
+      }
+      return res.rows[0];
+    })
+    .catch((err) => {
+      err;
+    });
 };
 exports.getUserWithId = getUserWithId;
 
@@ -53,11 +69,26 @@ exports.getUserWithId = getUserWithId;
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
+
 const addUser = function (user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
+  let userName = user.name;
+  let userEmail = user.email;
+  let userPassword = user.password;
+  return pool
+    .query(
+      `
+      INSERT INTO users (
+      name, email, password)
+      VALUES (
+      $1, $2, $3)
+      RETURNING *;
+    `,
+      [userName, userEmail, userPassword]
+    )
+    .then((res) => {
+      res.rows;
+    })
+    .catch((err) => err);
 };
 exports.addUser = addUser;
 
