@@ -145,7 +145,7 @@ const getAllProperties = function (options, limit = 10) {
   } 
    if (options.owner_id) {
   queryParams.push(`${options.owner_id}`);
-  queryString += `AND owner_id = $${queryParams.length} `;
+  queryString += `WHERE owner_id = $${queryParams.length} `;
   } 
   if (options.minimum_price_per_night){
     queryParams.push(`${options.minimum_price_per_night*100}`);
@@ -179,10 +179,69 @@ exports.getAllProperties = getAllProperties;
  * @param {{}} property An object containing all of the property details.
  * @return {Promise<{}>} A promise to the property.
  */
+// const addProperty = function (property) {
+//   const propertyId = Object.keys(properties).length + 1;
+//   property.id = propertyId;
+//   properties[propertyId] = property;
+//   return Promise.resolve(property);
+// };
 const addProperty = function (property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+  let propertyOwnerId = property.owner_id;
+  let propertyTitle = property.title;
+  let propertyDescription = property.description;
+  let propertyThumbnailPhotoUrl = property.thumbnail_photo_url;
+  let propertyCoverPhotoUrl = property.cover_photo_url;
+  let propertyCostPerNight = property.cost_per_night;
+  let propertyStreet = property.street;
+  let propertyCity = property.city;
+  let propertyProvince = property.province;
+  let propertyPostCode = property.post_code;
+  let propertyCountry = property.country;
+  let propertyParkingSpaces = property.parking_spaces;
+  let propertyNumberOfBathrooms = property.number_of_bathrooms;
+  let propertyNumberOfBedrooms = property.number_of_bedrooms;
+  return pool
+    .query(
+      `
+      INSERT INTO properties (
+        owner_id, 
+        title, 
+        description, 
+        thumbnail_photo_url, 
+        cover_photo_url, 
+        cost_per_night, 
+        street, 
+        city, 
+        province, 
+        post_code, 
+        country, 
+        parking_spaces, 
+        number_of_bathrooms, 
+        number_of_bedrooms)
+        VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+        )
+      RETURNING *;
+    `, [
+      propertyOwnerId,
+      propertyTitle,
+      propertyDescription,
+      propertyThumbnailPhotoUrl,
+      propertyCoverPhotoUrl,
+      propertyCostPerNight,
+      propertyStreet,
+      propertyCity,
+      propertyProvince,
+      propertyPostCode,
+      propertyCountry,
+      propertyParkingSpaces,
+      propertyNumberOfBathrooms,
+      propertyNumberOfBedrooms
+    ]
+    )
+    .then((res) => {
+      res.rows;
+    })
+    .catch((err) => err);
 };
 exports.addProperty = addProperty;
